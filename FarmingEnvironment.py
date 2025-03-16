@@ -44,7 +44,7 @@ class FarmEnv(Env):
         self.num_rows = 5
         self.num_columns = 5
         self.grid_size = self.num_rows * self.num_columns
-        self.num_states = self.grid_size * inventory_states * num_deliveries * inventory_states * (self.grid_size - self.number_of_farms)
+        self.num_states = self.grid_size * inventory_states * num_deliveries * (inventory_states-1) * 2 * (self.grid_size - self.number_of_farms)
 
         self.transition_table = {}
         
