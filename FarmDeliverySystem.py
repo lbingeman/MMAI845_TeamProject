@@ -8,7 +8,7 @@ import sys
 alpha = 0.1
 gamma = 0.9
 epsilon = 0.1
-num_episodes = 10000
+num_episodes = 1000000
 num_steps = 1000
 
 class QTable:
@@ -88,24 +88,6 @@ if __name__=='__main__':
         # Save the object to a file
         with open("current_q_table.pkl", "wb") as f:
             pickle.dump(q_table, f)
-    if len(sys.argv) > 1 and sys.argv[1] == "prev_trained_table":
-        # Load the object from the file
-        with open("current_q_table.pkl", "rb") as f:
-            q_table = pickle.load(f)
-        env = FarmEnv(render_mode='human')
-        (next_state, info) = env.reset()
-        for i in range(num_steps):
-            action_mask = info["action_mask"]
-            q_values = q_table.get_q_values(next_state)
-            action = 0
-            top_value = np.iinfo(np.int32).min
-            for potential_action, value in enumerate(q_values):
-                if value >= top_value and action_mask[potential_action] != 0:
-                    action = potential_action
-                    top_value = value
-            (next_state, reward, terminated, truncated, info) = env.step(action)
-            if terminated:
-                break
     else:
         env = FarmEnv(render_mode='human')
         (next_state, info) = env.reset()
