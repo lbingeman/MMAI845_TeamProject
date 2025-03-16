@@ -121,4 +121,4 @@ class Farm:
         inventory.pickup_inventory(self.farm_name)
     
     def has_picked_up_inventory(self, inventory: InventoryState):
-        inventory.has_inventory(self.farm_name)
+        return inventory.has_inventory(self.farm_name)

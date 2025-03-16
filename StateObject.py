@@ -1,3 +1,5 @@
+import copy
+
 class StateObject:
     def __init__(self, current_inventory_state, delivery_states, row, column):
         self.current_inventory_state = current_inventory_state
@@ -5,8 +7,14 @@ class StateObject:
         self.row = row
         self.column = column
     
+    def copy(self):
+        return copy.deepcopy(self)
+    
     def __hash__(self):
-        return hash((self.row, self.column, tuple(self.delivery_states), self.current_inventory_state))
+        list = [self.row, self.column, self.current_inventory_state]
+        for state in self.delivery_states:
+            list.append(state)
+        return hash(tuple(list))
 
     def __eq__(self, other):
         ## first check if the delivery states are the same

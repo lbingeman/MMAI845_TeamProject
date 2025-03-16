@@ -110,13 +110,6 @@ class FarmEnv(Env):
         
         location = random.sample(range(0, self.num_rows), 1)[0], random.sample(range(0, self.num_columns), 1)[0]
 
-        # Print out the farm locations
-        for farm in self.farm_locations:
-            print("Farm: ", farm.farm_row, " ", farm.farm_column)
-        
-        for delivery in delivery_states:
-            print("Delivery: ", delivery.delivery_row, " ", delivery.delivery_column)
-        
         self.s = StateObject(current_inventory_state, delivery_states, location[0], location[1])
         
     def is_valid_position(self, col_position, row_position):
@@ -131,6 +124,7 @@ class FarmEnv(Env):
         if self.s in self.transition_table and a in self.transition_table[self.s]:
             return self.transition_table[self.s][a]
         
+        prev_state = self.s.copy
         current_inventory = self.s.current_inventory_state
         deliveries = self.s.delivery_states
         row_position = self.s.row
@@ -189,11 +183,11 @@ class FarmEnv(Env):
         
         state = StateObject(current_inventory, deliveries, row_position, column_position)
         # set the transition table
-        if self.s not in self.transition_table:
-            self.transition_table[self.s] = {}
+        if prev_state not in self.transition_table:
+            self.transition_table[prev_state] = {}
             
-        self.transition_table[self.s][a] = [(1.0, state, reward, met_end_condition)]
-        return self.transition_table[self.s][a]
+        self.transition_table[prev_state][a] = [(1.0, state, reward, met_end_condition)]
+        return self.transition_table[prev_state][a]
 
     def action_mask(self, state):
         """Computes an action mask for the action space using the state information."""
@@ -215,9 +209,9 @@ class FarmEnv(Env):
             mask[2] = 1
         if self.is_valid_position(row, col - 1) and self.desc[row + 1, 2 * col] == b":":
             mask[3] = 1
-        if farm and not farm.has_picked_up_inventory(current_inventory_state):
+        if farm is not None and not farm.has_picked_up_inventory(current_inventory_state):
             mask[4] = 1
-        if target_customer and target_customer.can_fulfill_order(current_inventory_state):
+        if target_customer is not None and target_customer.can_fulfill_order(current_inventory_state) and not target_customer.has_fulfill_order():
             mask[5] = 1
         return mask
 
@@ -228,6 +222,7 @@ class FarmEnv(Env):
         self.s = new_state
         self.lastaction = a
         self.turns += 1
+        self.total_rewards += reward
 
         if self.render_mode == "human":
             self.render()
@@ -243,6 +238,7 @@ class FarmEnv(Env):
         self.initialize_state()
         self.lastaction = None
         self.turns = 0
+        self.total_rewards = 0
         self.taxi_orientation = 0
 
         if self.render_mode == "human":
@@ -388,7 +384,8 @@ class FarmEnv(Env):
         status_text = [f"Pick up from Currie Farm: {self.s.current_inventory_state.currie_farm}", 
                        f"Pick up from Union Farm: {self.s.current_inventory_state.union_farm}",
                        f"Pick up from Smith Farm: {self.s.current_inventory_state.smith_farm}",
-                       f"Total steps: {self.turns}"]
+                       f"Total steps: {self.turns}",
+                       f"Total rewards: {self.total_rewards}"]
         space_per_row = int(status_bar_height / len(status_text))
         current_position = WINDOW_SIZE[1]
         for text in status_text:
