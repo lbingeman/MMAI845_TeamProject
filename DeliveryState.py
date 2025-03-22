@@ -12,6 +12,15 @@ class DeliveryState:
     def __eq__(self, other):
         return (self.union_farm, self.currie_farm, self.smith_farm, self.order_fulfilled) == (other.union_farm, other.currie_farm, other.smith_farm, other.order_fulfilled)
 
+    def vector_representation(self):
+        result = []
+        result.append(int(self.union_farm))
+        result.append(int(self.currie_farm))
+        result.append(int(self.smith_farm))
+        result.append(int(self.order_fulfilled))
+        
+        return result
+    
     def encoding(self):
         bool_tuple = (self.union_farm, self.currie_farm, self.smith_farm)
         # Convert bool tuple to binary string
@@ -43,6 +52,14 @@ class InventoryState:
 
     def __eq__(self, other):
         return (self.union_farm, self.currie_farm, self.smith_farm) == (other.union_farm, other.currie_farm, other.smith_farm)
+    
+    def vector_representation(self):
+        result = []
+        result.append(int(self.union_farm))
+        result.append(int(self.currie_farm))
+        result.append(int(self.smith_farm))
+        
+        return result
     
     def pickup_inventory(self, farm):
         if farm == 'union_farm':
@@ -84,6 +101,14 @@ class Delivery:
 
     def __eq__(self, other):
         return (self.delivery_state, self.delivery_row, self.delivery_column) == (other.delivery_state, other.delivery_row, other.delivery_column)
+    
+    def vector_representation(self):
+        result = []
+        result.extend(self.delivery_state.vector_representation())
+        result.append(int(self.delivery_row))
+        result.append(int(self.delivery_column))
+        
+        return result
     
     def is_at_location(self, location_row, location_column):
         return location_row == self.delivery_row and location_column == self.delivery_column

@@ -15,6 +15,15 @@ class StateObject:
         for state in self.delivery_states:
             list.append(state)
         return hash(tuple(list))
+    
+    def vector_representation(self):
+        result = []
+        result.extend(self.current_inventory_state.vector_representation())
+        for state in self.delivery_states:
+            result.extend(state.vector_representation())
+        result.append(self.row)
+        result.append(self.column)
+        return result
 
     def __eq__(self, other):
         ## first check if the delivery states are the same

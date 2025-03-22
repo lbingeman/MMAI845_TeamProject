@@ -32,9 +32,10 @@ class FarmEnv(Env):
         "render_fps": 4,
     }
 
-    def __init__(self, num_deliveries: int = 3, render_mode: Optional[str] = None):
+    def __init__(self, num_deliveries: int = 3, fix_location = True, fix_orders = True, render_mode: Optional[str] = None):
         self.desc = np.asarray(MAP, dtype="c")
-
+        self.fix_location = fix_location
+        self.fix_orders = fix_orders
         # Farm locations
         self.farm_locations = [Farm('currie_farm', 0,0), Farm('union_farm', 0,4), Farm('smith_farm', 4,0)]
         self.number_of_farms = len(self.farm_locations)
@@ -87,28 +88,41 @@ class FarmEnv(Env):
         location_list = random.sample(range(0, self.num_rows * self.num_columns), self.num_deliveries + self.number_of_farms)
         delivery_states = []
         
+        fixed_locations = [(2,1), (3,3), (4,2)]
+        
         for _ in range(self.num_deliveries):
             # Randomly initialize the DeliveryState object
-            while True:
-                union_farm = random.choice([True, False])
-                currie_farm = random.choice([True, False])
-                smith_farm = random.choice([True, False])
+            if self.fix_orders is False:
+                while True:
+                    union_farm = random.choice([True, False])
+                    currie_farm = random.choice([True, False])
+                    smith_farm = random.choice([True, False])
+                    
+                    # Ensure that not all states are False
+                    if union_farm or currie_farm or smith_farm:
+                        break
+            else:
+                union_farm = True
+                currie_farm = True
+                smith_farm = True
                 
-                # Ensure that not all states are False
-                if union_farm or currie_farm or smith_farm:
-                    break
-            delivery_location = location_list.pop()
-            delivery_row = int(delivery_location/self.num_columns)
-            delivery_column = delivery_location % self.num_columns
-            while self.is_at_farm(delivery_row, delivery_column):
+            if self.fix_location is True:
+                delivery_location = fixed_locations.pop()
+                delivery_row = delivery_location[0]
+                delivery_column = delivery_location[1]
+            else:
                 delivery_location = location_list.pop()
                 delivery_row = int(delivery_location/self.num_columns)
                 delivery_column = delivery_location % self.num_columns
+                while self.is_at_farm(delivery_row, delivery_column):
+                    delivery_location = location_list.pop()
+                    delivery_row = int(delivery_location/self.num_columns)
+                    delivery_column = delivery_location % self.num_columns
             
             # Create a new DeliveryState object and append it to the list
             delivery_states.append(Delivery(DeliveryState(union_farm, currie_farm, smith_farm), delivery_row, delivery_column))
         
-        location = random.sample(range(0, self.num_rows), 1)[0], random.sample(range(0, self.num_columns), 1)[0]
+        location = [0,0]
 
         self.s = StateObject(current_inventory_state, delivery_states, location[0], location[1])
         
@@ -180,6 +194,9 @@ class FarmEnv(Env):
             if not customer.has_fulfill_order():
                 met_end_condition = False 
                 break
+        
+        if met_end_condition is True:
+            reward += 1000
         
         state = StateObject(current_inventory, deliveries, row_position, column_position)
         # set the transition table
