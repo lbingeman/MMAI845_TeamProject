@@ -32,7 +32,7 @@ class FarmEnv(Env):
         "render_fps": 4,
     }
 
-    def __init__(self, num_deliveries: int = 3, fix_location = True, fix_orders = True, render_mode: Optional[str] = None):
+    def __init__(self, num_deliveries: int = 3, fix_location = False, fix_orders = False, render_mode: Optional[str] = None):
         self.desc = np.asarray(MAP, dtype="c")
         self.fix_location = fix_location
         self.fix_orders = fix_orders
@@ -135,8 +135,8 @@ class FarmEnv(Env):
     
     def get_transition(self, a):        
         # Let's see if we have a transition for it
-        if self.s in self.transition_table and a in self.transition_table[self.s]:
-            return self.transition_table[self.s][a]
+        if self.s.__hash__() in self.transition_table and a in self.transition_table[self.s.__hash__()]:
+            return self.transition_table[self.s.__hash__()][a]
         
         prev_state = self.s.copy
         current_inventory = self.s.current_inventory_state
@@ -195,16 +195,13 @@ class FarmEnv(Env):
                 met_end_condition = False 
                 break
         
-        if met_end_condition is True:
-            reward += 1000
-        
         state = StateObject(current_inventory, deliveries, row_position, column_position)
         # set the transition table
-        if prev_state not in self.transition_table:
-            self.transition_table[prev_state] = {}
+        if prev_state.__hash__() not in self.transition_table:
+            self.transition_table[prev_state.__hash__()] = {}
             
-        self.transition_table[prev_state][a] = [(1.0, state, reward, met_end_condition)]
-        return self.transition_table[prev_state][a]
+        self.transition_table[prev_state.__hash__()][a] = [(1.0, state, reward, met_end_condition)]
+        return self.transition_table[prev_state.__hash__()][a]
 
     def action_mask(self, state):
         """Computes an action mask for the action space using the state information."""
