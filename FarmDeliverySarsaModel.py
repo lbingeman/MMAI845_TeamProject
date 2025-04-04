@@ -3,14 +3,7 @@ from FarmDeliveryRLSystem import FarmDeliveryRLSystemBase, ModelConfig
 from StateObject import StateObject
 from QTable import QTable
 
-class FarmQLearningModel(FarmDeliveryRLSystemBase):
-    """
-    A Q-learning based model for farm delivery reinforcement learning.
-    
-    This model uses Q-learning to decide on actions based on the state of the farm environment.
-    It supports epsilon-greedy action selection and Q-value updates using the Bellman equation.
-    """
-    
+class FarmSarsaModel(FarmDeliveryRLSystemBase):
     def __init__(self, environment_mode, use_action_mask=False):
         """
         Initialize FarmQLearningModel instance.
@@ -31,14 +24,14 @@ class FarmQLearningModel(FarmDeliveryRLSystemBase):
         """
         return ModelConfig(
             model_name='q_learning_model', 
-            max_steps_per_episode=500, 
-            max_episodes_per_training=100000, 
+            max_steps_per_episode=5000, 
+            max_episodes_per_training=5000, 
             min_epsilon=0.1, 
             max_epsilon=0.1, 
             epsilon_discount=0.0001, 
             gamma=0.9, 
-            should_save_checkpoint=False, 
-            checkpoint_frequency=1000000
+            should_save_checkpoint=True, 
+            checkpoint_frequency=250
         )
     
     def initialize_custom(self):
@@ -79,7 +72,7 @@ class FarmQLearningModel(FarmDeliveryRLSystemBase):
         
         return action
 
-    def _choose_action(self, state, epsilon, info, _):
+    def _choose_action(self, state, epsilon, info, previous_action):
         """
         Choose an action based on epsilon-greedy strategy.
 
@@ -91,27 +84,31 @@ class FarmQLearningModel(FarmDeliveryRLSystemBase):
         Returns:
         int: The action selected.
         """
-        if self.use_action_mask:
-            action_mask = info["action_mask"]
-        else:
-            action_mask = np.ones(info["action_mask"].shape)  # All actions are valid by default
+        
+        if previous_action is None:   
+            if self.use_action_mask:
+                action_mask = info["action_mask"]
+            else:
+                action_mask = np.ones(info["action_mask"].shape)  # All actions are valid by default
+                
+            q_values = self.q_table.get_q_values(state, action_mask)
             
-        q_values = self.q_table.get_q_values(state, action_mask)
+            # Epsilon-greedy action selection
+            if np.random.rand() < epsilon:
+                valid_actions = np.where(action_mask == 1)[0]  # Find valid actions based on the mask
+                action = np.random.choice(valid_actions)  # Select a random valid action
+            else:
+                # Choose the action with the highest Q-value
+                action = 0
+                top_value = np.iinfo(np.int32).min
+                for potential_action, value in enumerate(q_values):
+                    if value >= top_value:
+                        action = potential_action
+                        top_value = value
+            
+            return action
         
-        # Epsilon-greedy action selection
-        if np.random.rand() < epsilon:
-            valid_actions = np.where(action_mask == 1)[0]  # Find valid actions based on the mask
-            action = np.random.choice(valid_actions)  # Select a random valid action
-        else:
-            # Choose the action with the highest Q-value
-            action = 0
-            top_value = np.iinfo(np.int32).min
-            for potential_action, value in enumerate(q_values):
-                if value >= top_value:
-                    action = potential_action
-                    top_value = value
-        
-        return action
+        return previous_action
     
     def _perform_training_step(self, current_state: StateObject, next_state: StateObject, action: int, reward: float, done: bool, next_info: dict, prev_info: dict) -> int:
         """
@@ -132,9 +129,13 @@ class FarmQLearningModel(FarmDeliveryRLSystemBase):
         q_values = self.q_table.get_q_values(current_state, prev_info["action_mask"])  # Get current Q-values
         next_state_q_value = self.q_table.get_q_values(next_state, next_info["action_mask"])  # Get Q-values for next state
         
+        # Randomly choose the next action
+        next_action = self._choose_action(next_state, self._get_epsilon(self.last_episode), next_info, None)
+
         # Update Q-value using the Bellman equation
-        new_q_value = q_values[action] + self.alpha * (reward + self.config.gamma * np.max(next_state_q_value) - q_values[action])
+        new_q_value = q_values[action] + self.alpha * (reward + self.config.gamma * next_state_q_value[next_action] - q_values[action])
         self.q_table.set_q_value(current_state, action, new_q_value)  # Set the updated Q-value
+        return next_action
         
     def _perform_post_training_step(self, step_number):
         """
