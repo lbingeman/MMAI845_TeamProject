@@ -3,6 +3,7 @@ from FarmDeliveryRLSystem import FarmDeliveryRLSystemBase
 from FarmDeliveryDQN import FarmDQNModel
 from FarmingDeliveryQLearning import FarmQLearningModel
 from FarmDeliveryStableBaseline import FarmStableBaselineDQNModel
+from FarmDeliverySarsaModel import FarmSarsaModel
 import pickle
 
 def get_standard_model(network_type, environment_mode, should_load) -> FarmDeliveryRLSystemBase:
@@ -11,6 +12,8 @@ def get_standard_model(network_type, environment_mode, should_load) -> FarmDeliv
         model = FarmQLearningModel(environment_mode=environment_mode, use_action_mask=True)
     elif network_type == "dqn":
         model = FarmDQNModel(environment_mode=environment_mode)
+    elif network_type == "sarsa":
+        model = FarmSarsaModel(environment_mode=environment_mode, use_action_mask=True)
     
     if should_load:
         with open(model.filename, "rb") as f:
@@ -20,7 +23,7 @@ def get_standard_model(network_type, environment_mode, should_load) -> FarmDeliv
 
 def get_model(network_type, environment_mode, should_load) -> FarmDeliveryRLSystemBase:
     model = None
-    if network_type == "q_learning" or network_type == "dqn":
+    if network_type == "q_learning" or network_type == "dqn" or network_type == "sarsa":
         return get_standard_model(network_type, environment_mode, should_load)
     elif network_type == "stable_baseline_dqn":
         model = FarmStableBaselineDQNModel(environment_mode=environment_mode)
