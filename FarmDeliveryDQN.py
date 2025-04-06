@@ -87,9 +87,9 @@ class FarmDQNModel(FarmDeliveryRLSystemBase):
         - ModelConfig: Configuration settings for the model (such as epsilon, gamma, etc.).
         """
         return ModelConfig(
-            model_name = 'dqn_model_3',
+            model_name = 'dqn_model_4',
             max_steps_per_episode = 10000,
-            max_episodes_per_training = 20000,
+            max_episodes_per_training = 2000,
             min_epsilon = 0.05,
             max_epsilon = 1.0,
             epsilon_discount = 0.0001,
@@ -101,7 +101,6 @@ class FarmDQNModel(FarmDeliveryRLSystemBase):
     def initialize_with_warmstart(self, model):
         self.model = model.model
         self.target_model = model.target_model
-        self.replay_memory = model.replay_memory
 
     def initialize_custom(self):
         """
@@ -111,7 +110,7 @@ class FarmDQNModel(FarmDeliveryRLSystemBase):
         and compiling the model. It also sets up the experience replay buffer.
         """
         # Initialization of important parameters
-        self.replay_memory_capacity = 100000
+        self.replay_memory_capacity = 1000000
         self.learning_rate = 0.001
         self.batch_size = 64
         self.target_model_update = 1000
