@@ -13,38 +13,6 @@ This project provides a modular reinforcement learning framework for simulating 
 
 ## 🚀 Usage
 
-### Prerequisites
-
-- Python 3.8+
-- Required dependencies (based on your environment setup):
-
-```bash
-pip install -r requirements.txt
-```
-
-> Make sure your local environment includes the necessary model classes:
-- `FarmDQNModel`
-- `FarmQLearningModel`
-- `FarmSarsaModel`
-- `FarmStableBaselineDQNModel`
-
----
-
-### 📁 File Structure
-
-```
-.
-├── main.py
-├── FarmDeliveryRLSystem.py
-├── FarmDeliveryDQN.py
-├── FarmingDeliveryQLearning.py
-├── FarmDeliverySarsaModel.py
-├── FarmDeliveryStableBaseline.py
-└── ...
-```
-
----
-
 ### 🔧 CLI Usage
 
 #### Standard Model Operating
