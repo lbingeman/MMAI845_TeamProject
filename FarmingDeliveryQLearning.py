@@ -31,14 +31,14 @@ class FarmQLearningModel(FarmDeliveryRLSystemBase):
         """
         return ModelConfig(
             model_name='q_learning_model', 
-            max_steps_per_episode=500, 
-            max_episodes_per_training=100000, 
+            max_steps_per_episode=5000, 
+            max_episodes_per_training=50000, 
             min_epsilon=0.1, 
             max_epsilon=0.1, 
             epsilon_discount=0.0001, 
             gamma=0.9, 
-            should_save_checkpoint=False, 
-            checkpoint_frequency=1000000
+            should_save_checkpoint=True, 
+            checkpoint_frequency=10000
         )
     
     def initialize_custom(self):
@@ -49,6 +49,10 @@ class FarmQLearningModel(FarmDeliveryRLSystemBase):
         """
         self.q_table = QTable(actions=range(self.env.action_space.n))  # Initialize Q-table with actions
         self.alpha = 0.05  # Learning rate for Q-value updates
+        
+        # Enabling large rewards in the environment
+        self.env.use_large_rewards = True
+        
     
     def _get_action_for_state(self, state, info):
         """

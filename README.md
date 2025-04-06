@@ -47,6 +47,7 @@ pip install -r requirements.txt
 
 ### 🔧 CLI Usage
 
+#### Standard Model Operating
 ```bash
 python main.py <command> <network_type> <environment_mode> [continue]
 ```
@@ -57,31 +58,61 @@ python main.py <command> <network_type> <environment_mode> [continue]
 |------------------|-----------------------------------------------------------------------------|
 | `command`        | What to do: `train`, `run`, or `evaluate`                                   |
 | `network_type`   | Model to use: `q_learning`, `dqn`, `sarsa`, `stable_baseline_dqn`           |
-| `environment_mode` | Mode/environment (e.g., `"train"`, `"test"`, etc. – based on your setup) |
+| `environment_mode` | Mode/environment (e.g. `fixed_location`, `fully_fixed_state`, `fixed_orders`, `non_fixed_state` |
 | `continue`       | *(Optional)* Use `"continue"` to resume training from a saved model         |
+
+#### Warm Starting a DQN model
+If you want to warm start your DQN model:
+```bash
+python main.py train dqn <environment_mode> warmstart <file_path>
+```
+
+#### Arguments
+
+| Argument         | Description                                                                 |
+|------------------|-----------------------------------------------------------------------------|
+| `environment_mode` | Mode/environment (e.g. `fixed_location`, `fully_fixed_state`, `fixed_orders`, `non_fixed_state` |
+| `file_path`       | File path to pkl file to load model weights from         |
 
 ---
 
+#### Loading an existing model
+```bash
+python main.py <command> from <file_path>
+```
+
+#### Arguments
+
+| Argument         | Description                                                                 |
+|------------------|-----------------------------------------------------------------------------|
+| `command`        | What to do: `train`, `run`, or `evaluate`                                   |
+| `file_path`       | File path to pkl file containing saved model         |
+
 ### ✅ Examples
 
-**Train a DQN model from scratch**  
+**Train a DQN model from scratch for fixed order environment**  
 ```bash
-python main.py train dqn train
+python main.py train dqn fixed_orders
 ```
 
-**Continue training a Q-Learning model**  
+**Continue training a Q-Learning model for fixed location environment**  
 ```bash
-python main.py train q_learning train continue
+python main.py train q_learning fixed_location continue
 ```
 
-**Evaluate a saved SARSA model**  
+**Evaluate a saved SARSA model with fixed location environment**  
 ```bash
-python main.py evaluate sarsa eval
+python main.py evaluate sarsa fixed_location
 ```
 
-**Run simulation using a Stable Baseline DQN model**  
+**Run simulation using a Stable Baseline DQN model for fully fixed environment **  
 ```bash
-python main.py run stable_baseline_dqn test
+python main.py run stable_baseline_dqn fully_fixed_state
+```
+
+**Evaluate a previous model**  
+```bash
+python main.py evaluate from dqn_model_delivery_non_fixed_state.pkl
 ```
 
 ---

@@ -87,9 +87,9 @@ class FarmDQNModel(FarmDeliveryRLSystemBase):
         - ModelConfig: Configuration settings for the model (such as epsilon, gamma, etc.).
         """
         return ModelConfig(
-            model_name = 'dqn_model',
-            max_steps_per_episode = 1000,
-            max_episodes_per_training = 5000,
+            model_name = 'dqn_model_3',
+            max_steps_per_episode = 10000,
+            max_episodes_per_training = 20000,
             min_epsilon = 0.05,
             max_epsilon = 1.0,
             epsilon_discount = 0.0001,
@@ -97,6 +97,11 @@ class FarmDQNModel(FarmDeliveryRLSystemBase):
             should_save_checkpoint = True,
             checkpoint_frequency = 1000
         )
+    
+    def initialize_with_warmstart(self, model):
+        self.model = model.model
+        self.target_model = model.target_model
+        self.replay_memory = model.replay_memory
 
     def initialize_custom(self):
         """
