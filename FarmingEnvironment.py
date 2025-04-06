@@ -60,6 +60,9 @@ class FarmEnv(Env):
         self.fix_location = fix_location
         self.fix_orders = fix_orders
         
+        # List to store the frames for rendering
+        self.frames = []
+        
         # Toggle for reward shaping
         self.use_large_rewards = False
 
@@ -120,6 +123,10 @@ class FarmEnv(Env):
         self.destination_imgs = None           # Delivery target images (not yet picked up)
         self.destination_imgs_dropoff = None   # Delivery target images (picked up)
 
+    def prepare_for_saving(self):
+        # clear transition table to make file smaller
+        self.transition_table = {}
+    
     def is_at_farm(self, location_row, location_column):
         """
         Checks if current location matches a farm's location.
@@ -404,9 +411,8 @@ class FarmEnv(Env):
         if self.window is None:
             pygame.init()
             pygame.display.set_caption("Farm Delivery Service")  # Set the window title
-            window_size = (WINDOW_SIZE[0], WINDOW_SIZE[1] + STATUS_BAR_SIZE[1] + ORDER_BAR_SIZE[1])  # Adjust window size to include status bar
             if mode == "human":
-                self.window = pygame.display.set_mode(window_size)  # Set up the display window
+                self.window = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)  # Set up the display window
 
         # Set font for status bar text
         font = pygame.font.SysFont("Arial", 16)
@@ -666,7 +672,5 @@ class FarmEnv(Env):
         Close the rendering window (if any).
         """
         if self.window is not None:
-            import pygame
-
             pygame.display.quit()
             pygame.quit()

@@ -160,6 +160,9 @@ class FarmDeliveryRLSystemBase:
         """
         Saves the current system (model and training logs) to disk.
         """
+        # Let's clear the transition table before saving
+        self.env.prepare_for_saving()
+        
         with open(self.filename, "wb") as f:
             pickle.dump(self, f)
         
@@ -197,6 +200,7 @@ class FarmDeliveryRLSystemBase:
         Trains the RL model by running episodes and updating the model based on experience.
         """
         self.env.render_mode = "not_human"  # Disable rendering
+        self.config = self.get_config() # reset config
         try:
             # Initialize environment and training variables
             (state, info) = self.env.reset()
@@ -264,7 +268,7 @@ class FarmDeliveryRLSystemBase:
         self.env.render_mode = "not_human"
         try:
             total_steps, total_rewards = 0, 0
-            episodes = 100
+            episodes = 1000
 
             for _ in range(episodes):
                 (state, info) = self.env.reset()  # Reset the environment

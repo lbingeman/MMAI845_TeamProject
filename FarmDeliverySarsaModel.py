@@ -23,7 +23,7 @@ class FarmSarsaModel(FarmDeliveryRLSystemBase):
         ModelConfig: Configuration object containing model parameters.
         """
         return ModelConfig(
-            model_name='q_learning_model', 
+            model_name='sarsa', 
             max_steps_per_episode=5000, 
             max_episodes_per_training=5000, 
             min_epsilon=0.1, 
@@ -42,6 +42,9 @@ class FarmSarsaModel(FarmDeliveryRLSystemBase):
         """
         self.q_table = QTable(actions=range(self.env.action_space.n))  # Initialize Q-table with actions
         self.alpha = 0.05  # Learning rate for Q-value updates
+        
+        # Enabling large rewards in the environment
+        self.env.use_large_rewards = True
     
     def _get_action_for_state(self, state, info):
         """
